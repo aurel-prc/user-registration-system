@@ -166,7 +166,7 @@ int handle_get_line(char **line_ptr, size_t size) {
             fprintf(stderr, "get_line error: LINE_PTR_NULL");
             return -1;
         case GET_LINE_REALLOCATION_FAILED:
-            fprintf(stderr, "get_line warning: REALLOCATION_FAILED. Retrieved:%s", *line_ptr);
+            fprintf(stderr, "get_line warning: REALLOCATION_FAILED. String is truncated.");
             return 0;
         case GET_LINE_SIZE_LESS_THAN_10:
             fprintf(stderr, "get_line error: SIZE_LESS_THAN_10");
