@@ -15,7 +15,7 @@ typedef enum {
  * and each time the buffer has to reallocate,
  * the `size` parameter will be added to the old size and that will be the new size.
 */
-GetLineError get_line(char ** line_ptr, const size_t size) {
+GetLineError get_line(char **line_ptr, const size_t size) {
     if (line_ptr == nullptr) {
         return GET_LINE_LINE_PTR_NULL;
     }
@@ -29,10 +29,10 @@ GetLineError get_line(char ** line_ptr, const size_t size) {
     }
 
     for (int i = 0;; i++) {
-        char c = (char)getchar();
+        char c = (char) getchar();
 
         if (i > 0 && (i + 1) % size == 0) {
-            char * temp_ptr = realloc(*line_ptr, size * ((i / size) + 1));
+            char *temp_ptr = realloc(*line_ptr, size * ((i / size) + 1));
 
             if (temp_ptr == nullptr) {
                 return GET_LINE_REALLOCATION_FAILED;
@@ -54,11 +54,11 @@ GetLineError get_line(char ** line_ptr, const size_t size) {
 
 // Safely reads one size_t. Returns -1 if there was an error parsing.
 ssize_t get_size_from_line() {
-    char * line = nullptr;
+    char *line = nullptr;
     // See get_char same line.
     get_line(&line, 10);
 
-    char * end_ptr;
+    char *end_ptr;
     errno = 0;
     size_t n;
     n = strtol(line, &end_ptr, 10);
@@ -71,12 +71,12 @@ ssize_t get_size_from_line() {
 }
 
 typedef struct {
-    char * name;
-    char * last_name;
-    char * email;
+    char *name;
+    char *last_name;
+    char *email;
 } User;
 
-User user_create(char * name, char * last_name, char * email) {
+User user_create(char *name, char *last_name, char *email) {
     User user;
     user.name = name;
     user.last_name = last_name;
@@ -85,7 +85,7 @@ User user_create(char * name, char * last_name, char * email) {
 }
 
 typedef struct {
-    User * users;
+    User *users;
     size_t length;
     size_t capacity;
 } Userlist;
@@ -99,14 +99,14 @@ Userlist userlist_create(size_t capacity) {
 }
 
 // Returns -1 if the list could not be reallocated.
-int userlist_push(Userlist * userlist, User user) {
+int userlist_push(Userlist *userlist, User user) {
     size_t length_now = userlist->length + 1;
     size_t i = length_now - 1;
     size_t capacity = userlist->capacity;
 
     if (length_now > capacity) {
         size_t new_capacity = capacity * 2;
-        User * temp_ptr = realloc(userlist->users, new_capacity * sizeof(User));
+        User *temp_ptr = realloc(userlist->users, new_capacity * sizeof(User));
 
         if (temp_ptr == nullptr) {
             return -1;
@@ -123,7 +123,7 @@ int userlist_push(Userlist * userlist, User user) {
 }
 
 // Returns -1 if the index is out of bounds.
-int userlist_remove(Userlist * userlist, size_t i) {
+int userlist_remove(Userlist *userlist, size_t i) {
     if (i >= userlist->length) {
         return -1;
     }
@@ -139,7 +139,7 @@ int userlist_remove(Userlist * userlist, size_t i) {
 }
 
 // Returns -1 if the index is out of bounds.
-int userlist_print_at(Userlist * userlist, size_t i) {
+int userlist_print_at(Userlist *userlist, size_t i) {
     if (i >= userlist->length) {
         return -1;
     }
@@ -149,13 +149,13 @@ int userlist_print_at(Userlist * userlist, size_t i) {
     return 0;
 }
 
-void userlist_print_all(Userlist * userlist) {
+void userlist_print_all(Userlist *userlist) {
     for (size_t i = 0; i < userlist->length; i++) {
         userlist_print_at(userlist, i);
     }
 }
 
-int handle_get_line(char ** line_ptr, size_t size) {
+int handle_get_line(char **line_ptr, size_t size) {
     switch (get_line(line_ptr, size)) {
         case GET_LINE_SUCCESS:
             return 0;
@@ -171,8 +171,7 @@ int handle_get_line(char ** line_ptr, size_t size) {
     }
 }
 
-int main()
-{
+int main() {
     // 30 is the *initial* capacity.
     Userlist userlist = userlist_create(30);
 
@@ -192,7 +191,7 @@ int main()
             case 2:
                 printf("Enter the following information for the new user:\nName:");
 
-                char * name = nullptr;
+                char *name = nullptr;
 
                 if (handle_get_line(&name, 20) < 0) {
                     return -1;
@@ -200,7 +199,7 @@ int main()
 
                 printf("Last name:");
 
-                char * last_name = nullptr;
+                char *last_name = nullptr;
 
                 if (handle_get_line(&last_name, 20) < 0) {
                     return -1;
@@ -208,7 +207,7 @@ int main()
 
                 printf("Email:");
 
-                char * email = nullptr;
+                char *email = nullptr;
 
                 if (handle_get_line(&email, 20) < 0) {
                     return -1;
