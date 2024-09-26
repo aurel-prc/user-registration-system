@@ -57,14 +57,17 @@ GetLineError get_line(char **line_ptr, const size_t initial_capacity) {
 
 // Safely reads one size_t. Returns -1 if there was an error parsing.
 ssize_t get_size_from_line() {
-    char *line = nullptr;
-    // See get_char same line.
-    get_line(&line, 10);
+    // Long long max value:
+    // 9223372036854775807
+    // 1234567890123456789
+    char str[20]; // 19 + 1
+
+    fgets(str, 20, stdin);
 
     char *end_ptr;
     errno = 0;
     size_t n;
-    n = strtol(line, &end_ptr, 10);
+    n = strtol(str, &end_ptr, 10);
 
     if (errno != 0) {
         return -1;
@@ -190,6 +193,7 @@ int main() {
             case 1:
                 printf("Users:\n");
                 userlist_print_all(&userlist);
+                free(userlist.users);
                 return 0;
             case 2:
                 printf("Enter the following information for the new user:\nName:");
@@ -242,7 +246,11 @@ int main() {
 
                 break;
             case 5:
-                userlist_print_all(&userlist);
+                if (userlist.length == 0) {
+                    printf("User list is empty.\n");
+                } else {
+                    userlist_print_all(&userlist);
+                }
                 break;
             default:
                 printf("Unknown action.\n");
