@@ -77,6 +77,84 @@ ssize_t get_size_from_line() {
 }
 
 typedef struct {
+    void **items;
+    size_t length, capacity, item_size;
+} Vec;
+
+// Returns -1 if the capacity is 0 or smaller.
+int vec_create(Vec *vec, size_t capacity, size_t item_size) {
+    if (capacity <= 0) {
+        return -1;
+    }
+
+    vec->items = malloc(capacity * item_size);
+    vec->length = 0;
+    vec->capacity = capacity;
+    vec->item_size = item_size;
+
+    return 0;
+}
+
+// Returns -1 if the reallocation failed.
+int vec_push(Vec *vec, void *item) {
+    size_t capacity = vec->capacity;
+
+    if (vec->length >= capacity) {
+        size_t new_capacity = capacity * 2;
+        void *new_ptr = realloc(vec->items, new_capacity * vec->item_size);
+
+        if (new_ptr == nullptr) {
+            return -1;
+        }
+
+        vec->capacity = new_capacity;
+        vec->items = new_ptr;
+    }
+
+    vec->items[vec->length] = item;
+    vec->length++;
+
+    return 0;
+}
+
+// Returns -1 if the index is out of bounds.
+int vec_insert(Vec *vec, size_t i, void *item) {
+    if (i >= vec->length) {
+        return -1;
+    }
+
+    if (i == vec->length - 1) {
+        free(vec->items[i]);
+        vec->items[i] = item;
+        return 0;
+    }
+
+    for (size_t j = i + 1; j < vec->length - 1; j++) {
+        free(vec->items[j]);
+        vec->items[j] = vec->items[j - 1];
+    }
+
+    return 0;
+}
+
+// Returns -1 if the index is out of bounds.
+int vec_remove(Vec *vec, size_t i) {
+    if (i >= vec->length) {
+        return -1;
+    }
+
+    free(vec->items[i]);
+    vec->items[i] = nullptr;
+
+    for (size_t j = i; j < vec->length - 1; j++) {
+        vec->items[j] = vec->items[j + 1];
+    }
+
+    vec->length--;
+    return 0;
+}
+
+typedef struct {
     char *name;
     char *last_name;
     char *email;
