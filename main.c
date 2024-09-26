@@ -15,24 +15,27 @@ typedef enum {
  * and each time the buffer has to reallocate,
  * the `size` parameter will be added to the old size and that will be the new size.
 */
-GetLineError get_line(char **line_ptr, const size_t size) {
+GetLineError get_line(char **line_ptr, const size_t initial_capacity) {
     if (line_ptr == nullptr) {
         return GET_LINE_LINE_PTR_NULL;
     }
 
-    if (size < 10) {
+    if (initial_capacity < 10) {
         return GET_LINE_SIZE_LESS_THAN_10;
     }
 
     if (*line_ptr == nullptr) {
-        *line_ptr = malloc(size * sizeof(char));
+        *line_ptr = malloc(initial_capacity * sizeof(char));
     }
+
+    size_t capacity = initial_capacity;
 
     for (int i = 0;; i++) {
         char c = (char) getchar();
 
-        if (i > 0 && (i + 1) % size == 0) {
-            char *temp_ptr = realloc(*line_ptr, size * ((i / size) + 1));
+        if (i > 0 && (i + 1) % initial_capacity == 0) {
+            capacity *= 2;
+            char *temp_ptr = realloc(*line_ptr, capacity);
 
             if (temp_ptr == nullptr) {
                 return GET_LINE_REALLOCATION_FAILED;
