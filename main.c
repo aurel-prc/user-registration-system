@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
     char* name;
@@ -18,6 +19,9 @@ User create_user(char* name, char* last_name, char* email, const unsigned int ag
 
 int main(void)
 {
-    printf()
+    char* input;
+
+    
+
     return 0;
 }
