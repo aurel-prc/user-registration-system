@@ -64,7 +64,7 @@ ssize_t get_size_from_line() {
     char c;
     size_t i = 0;
 
-    while ((c = (char)getchar()) != '\n') {
+    while ((c = (char) getchar()) != '\n') {
         if (i < 19 && isdigit(c)) {
             str[i] = c;
             i++;
@@ -90,7 +90,7 @@ int get_digit_from_line() {
     char c;
     int digit = -1;
 
-    while ((c = (char)getchar()) != '\n') {
+    while ((c = (char) getchar()) != '\n') {
         if (isdigit(c)) {
             digit = c - '0';
         }
