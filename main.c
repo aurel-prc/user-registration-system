@@ -7,7 +7,7 @@ typedef enum {
     GET_LINE_LINE_PTR_NULL,
     // Not really an error. More like a warning that the line was truncated.
     GET_LINE_REALLOCATION_FAILED,
-    GET_LINE_SIZE_LESS_THAN_10,
+    GET_LINE_CAPACITY_LESS_THAN_10,
 } GetLineError;
 
 /* Similar to https://en.cppreference.com/w/c/experimental/dynamic/getline.
@@ -15,27 +15,27 @@ typedef enum {
  * and each time the buffer has to reallocate,
  * the `size` parameter will be added to the old size and that will be the new size.
 */
-GetLineError get_line(char **line_ptr, const size_t initial_capacity) {
+GetLineError get_line(char **line_ptr, const size_t capacity) {
     if (line_ptr == nullptr) {
         return GET_LINE_LINE_PTR_NULL;
     }
 
-    if (initial_capacity < 10) {
-        return GET_LINE_SIZE_LESS_THAN_10;
+    if (capacity < 10) {
+        return GET_LINE_CAPACITY_LESS_THAN_10;
     }
 
     if (*line_ptr == nullptr) {
-        *line_ptr = malloc(initial_capacity * sizeof(char));
+        *line_ptr = malloc(capacity * sizeof(char));
     }
 
-    size_t capacity = initial_capacity;
+    size_t current_capacity = capacity;
 
     for (int i = 0;; i++) {
         char c = (char) getchar();
 
-        if (i > 0 && (i + 1) % initial_capacity == 0) {
-            capacity *= 2;
-            char *temp_ptr = realloc(*line_ptr, capacity);
+        if (i > 0 && (i + 1) % capacity == 0) {
+            current_capacity *= 2;
+            char *temp_ptr = realloc(*line_ptr, current_capacity);
 
             if (temp_ptr == nullptr) {
                 return GET_LINE_REALLOCATION_FAILED;
@@ -186,8 +186,8 @@ void userlist_print_all(Userlist *userlist) {
     }
 }
 
-int handle_get_line(char **line_ptr, size_t size) {
-    switch (get_line(line_ptr, size)) {
+int handle_get_line(char **line_ptr, size_t capacity) {
+    switch (get_line(line_ptr, capacity)) {
         case GET_LINE_SUCCESS:
             return 0;
         case GET_LINE_LINE_PTR_NULL:
@@ -196,8 +196,8 @@ int handle_get_line(char **line_ptr, size_t size) {
         case GET_LINE_REALLOCATION_FAILED:
             fprintf(stderr, "get_line warning: REALLOCATION_FAILED. String is truncated.");
             return 0;
-        case GET_LINE_SIZE_LESS_THAN_10:
-            fprintf(stderr, "get_line error: SIZE_LESS_THAN_10");
+        case GET_LINE_CAPACITY_LESS_THAN_10:
+            fprintf(stderr, "get_line error: GET_LINE_CAPACITY_LESS_THAN_10");
             return -1;
     }
 }
