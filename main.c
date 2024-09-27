@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <ctype.h>
 
 typedef enum {
     GET_LINE_SUCCESS,
@@ -61,8 +61,17 @@ ssize_t get_size_from_line() {
     // 9223372036854775807
     // 1234567890123456789
     char str[20]; // 19 + 1
+    char c;
+    size_t i = 0;
 
-    fgets(str, 20, stdin);
+    while ((c = (char)getchar()) != '\n') {
+        if (i < 19 && isdigit(c)) {
+            str[i] = c;
+            i++;
+        }
+    }
+
+    str[19] = '\0';
 
     char *end_ptr;
     errno = 0;
@@ -76,82 +85,18 @@ ssize_t get_size_from_line() {
     return n;
 }
 
-typedef struct {
-    void **items;
-    size_t length, capacity, item_size;
-} Vec;
+// Safely reads one positive digit. Returns -1 if there was an error parsing.
+int get_digit_from_line() {
+    char c;
+    int digit = -1;
 
-// Returns -1 if the capacity is 0 or smaller.
-int vec_create(Vec *vec, size_t capacity, size_t item_size) {
-    if (capacity <= 0) {
-        return -1;
-    }
-
-    vec->items = malloc(capacity * item_size);
-    vec->length = 0;
-    vec->capacity = capacity;
-    vec->item_size = item_size;
-
-    return 0;
-}
-
-// Returns -1 if the reallocation failed.
-int vec_push(Vec *vec, void *item) {
-    size_t capacity = vec->capacity;
-
-    if (vec->length >= capacity) {
-        size_t new_capacity = capacity * 2;
-        void *new_ptr = realloc(vec->items, new_capacity * vec->item_size);
-
-        if (new_ptr == nullptr) {
-            return -1;
+    while ((c = (char)getchar()) != '\n') {
+        if (isdigit(c)) {
+            digit = c - '0';
         }
-
-        vec->capacity = new_capacity;
-        vec->items = new_ptr;
     }
 
-    vec->items[vec->length] = item;
-    vec->length++;
-
-    return 0;
-}
-
-// Returns -1 if the index is out of bounds.
-int vec_insert(Vec *vec, size_t i, void *item) {
-    if (i >= vec->length) {
-        return -1;
-    }
-
-    if (i == vec->length - 1) {
-        free(vec->items[i]);
-        vec->items[i] = item;
-        return 0;
-    }
-
-    for (size_t j = i + 1; j < vec->length - 1; j++) {
-        free(vec->items[j]);
-        vec->items[j] = vec->items[j - 1];
-    }
-
-    return 0;
-}
-
-// Returns -1 if the index is out of bounds.
-int vec_remove(Vec *vec, size_t i) {
-    if (i >= vec->length) {
-        return -1;
-    }
-
-    free(vec->items[i]);
-    vec->items[i] = nullptr;
-
-    for (size_t j = i; j < vec->length - 1; j++) {
-        vec->items[j] = vec->items[j + 1];
-    }
-
-    vec->length--;
-    return 0;
+    return digit;
 }
 
 typedef struct {
@@ -176,24 +121,26 @@ typedef struct {
 
 Userlist userlist_create(size_t capacity) {
     Userlist userlist;
+
     userlist.users = malloc(capacity * sizeof(User));
     userlist.length = 0;
     userlist.capacity = capacity;
+
     return userlist;
 }
 
-// Returns -1 if the list could not be reallocated.
-int userlist_push(Userlist *userlist, User user) {
+// Returns `false` if the list could not be reallocated.
+bool userlist_push(Userlist *userlist, User user) {
     size_t length_now = userlist->length + 1;
     size_t i = length_now - 1;
     size_t capacity = userlist->capacity;
 
     if (length_now > capacity) {
-        size_t new_capacity = capacity * 2;
+        size_t new_capacity = (capacity * 2) + 1;
         User *temp_ptr = realloc(userlist->users, new_capacity * sizeof(User));
 
         if (temp_ptr == nullptr) {
-            return -1;
+            return false;
         }
 
         userlist->capacity = new_capacity;
@@ -203,13 +150,13 @@ int userlist_push(Userlist *userlist, User user) {
     userlist->users[i] = user;
     userlist->length++;
 
-    return 0;
+    return true;
 }
 
-// Returns -1 if the index is out of bounds.
-int userlist_remove(Userlist *userlist, size_t i) {
+// Returns `false` if the index is out of bounds.
+bool userlist_remove(Userlist *userlist, size_t i) {
     if (i >= userlist->length) {
-        return -1;
+        return false;
     }
 
     if (i < userlist->length - 1) {
@@ -219,18 +166,18 @@ int userlist_remove(Userlist *userlist, size_t i) {
     }
 
     userlist->length--;
-    return 0;
+    return true;
 }
 
-// Returns -1 if the index is out of bounds.
-int userlist_print_at(Userlist *userlist, size_t i) {
+// Returns `false` if the index is out of bounds.
+bool userlist_print_at(Userlist *userlist, size_t i) {
     if (i >= userlist->length) {
-        return -1;
+        return false;
     }
 
     User user = userlist->users[i];
     printf("User[%zu]\n\tName: %s\n\tLast name: %s\n\tEmail: %s\n", i, user.name, user.last_name, user.email);
-    return 0;
+    return true;
 }
 
 void userlist_print_all(Userlist *userlist) {
@@ -256,18 +203,23 @@ int handle_get_line(char **line_ptr, size_t size) {
 }
 
 int main() {
-    // 30 is the *initial* capacity.
-    Userlist userlist = userlist_create(30);
+    Userlist userlist = userlist_create(3);
+
+    userlist_push(&userlist, user_create("Aurel", "Danel", "aurel.leonard.danel@educanet.cz"));
+    userlist_push(&userlist, user_create("John", "Doe", "john.doe@gmail.com"));
+
+    printf("===== Userlist has these initial users =====\n");
+    userlist_print_all(&userlist);
 
     while (true) {
-        printf("Choose action by typing the number:\n"
+        printf("===== Choose action by typing the number =====\n"
                "1: EXIT\n"
                "2: Add user\n"
                "3: Remove user\n"
                "4: Print user\n"
                "5: Print all users\n");
 
-        switch (get_size_from_line()) {
+        switch (get_digit_from_line()) {
             case 1:
                 printf("Users:\n");
                 userlist_print_all(&userlist);
@@ -298,7 +250,7 @@ int main() {
                     return -1;
                 }
 
-                if (userlist_push(&userlist, user_create(name, last_name, email)) == 0) {
+                if (userlist_push(&userlist, user_create(name, last_name, email))) {
                     printf("User was added.\n");
                 } else {
                     printf("Error: Reallocation failed.\n");
@@ -306,6 +258,11 @@ int main() {
 
                 break;
             case 3:
+                if (userlist.length == 0) {
+                    printf("The list is empty. Please add a user first.\n");
+                    break;
+                }
+
                 printf("Which user should be deleted? (index from 0 to %zu)\n", userlist.length - 1);
 
                 if (userlist_remove(&userlist, get_size_from_line()) == 0) {
@@ -316,9 +273,14 @@ int main() {
 
                 break;
             case 4:
+                if (userlist.length == 0) {
+                    printf("The list is empty. Please add a user first.\n");
+                    break;
+                }
+
                 printf("Which user should be printed? (index from 0 to %zu)\n", userlist.length - 1);
 
-                if (userlist_print_at(&userlist, get_size_from_line()) == -1) {
+                if (!userlist_print_at(&userlist, get_size_from_line())) {
                     printf("Error: Index out of bounds.\n");
                 }
 
