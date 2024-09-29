@@ -55,8 +55,8 @@ GetLineError get_line(char **line_ptr, const size_t capacity) {
     return GET_LINE_SUCCESS;
 }
 
-// Safely reads one size_t. Returns -1 if there was an error parsing.
-ssize_t get_size_from_line() {
+// Safely reads one size from a line. Returns `false` if there was an error parsing.
+bool get_size_from_line(size_t *n) {
     // Long long max value:
     // 9223372036854775807
     // 1234567890123456789
@@ -75,14 +75,14 @@ ssize_t get_size_from_line() {
 
     char *end_ptr;
     errno = 0;
-    size_t n;
-    n = strtol(str, &end_ptr, 10);
+
+    *n = strtol(str, &end_ptr, 10);
 
     if (errno != 0) {
-        return -1;
+        return false;
     }
 
-    return n;
+    return true;
 }
 
 // Safely reads one positive digit. Returns -1 if there was an error parsing.
@@ -91,7 +91,7 @@ int get_digit_from_line() {
     int digit = -1;
 
     while ((c = (char) getchar()) != '\n') {
-        if (isdigit(c)) {
+        if (isdigit(c) && digit == -1) {
             digit = c - '0';
         }
     }
@@ -264,10 +264,17 @@ int main() {
 
                 printf("Which user should be deleted? (index from 0 to %zu)\n", userlist.length - 1);
 
-                if (userlist_remove(&userlist, get_size_from_line()) == 0) {
-                    printf("User was removed.\n");
+                size_t i;
+
+                if (!get_size_from_line(&i)) {
+                    printf("Invalid number.\n");
+                    break;
+                }
+
+                if (userlist_remove(&userlist, i) == 0) {
+                    printf("User %zu was removed.\n", i);
                 } else {
-                    printf("Error: Index out of bounds.\n");
+                    printf("Error: Index out of bounds (%zu).\n", i);
                 }
 
                 break;
@@ -279,8 +286,15 @@ int main() {
 
                 printf("Which user should be printed? (index from 0 to %zu)\n", userlist.length - 1);
 
-                if (!userlist_print_at(&userlist, get_size_from_line())) {
-                    printf("Error: Index out of bounds.\n");
+                size_t j;
+
+                if (!get_size_from_line(&j)) {
+                    printf("Invalid number.\n");
+                    break;
+                }
+
+                if (!userlist_print_at(&userlist, j)) {
+                    printf("Error: Index out of bounds (%zu).\n", j);
                 }
 
                 break;
