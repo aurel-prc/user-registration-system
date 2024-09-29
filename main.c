@@ -131,11 +131,9 @@ Userlist userlist_create(size_t capacity) {
 
 // Returns `false` if the list could not be reallocated.
 bool userlist_push(Userlist *userlist, User user) {
-    size_t length_now = userlist->length + 1;
-    size_t i = length_now - 1;
     size_t capacity = userlist->capacity;
 
-    if (length_now > capacity) {
+    if (userlist->length >= capacity) {
         size_t new_capacity = (capacity * 2) + 1;
         User *temp_ptr = realloc(userlist->users, new_capacity * sizeof(User));
 
@@ -147,7 +145,7 @@ bool userlist_push(Userlist *userlist, User user) {
         userlist->users = temp_ptr;
     }
 
-    userlist->users[i] = user;
+    userlist->users[userlist->length] = user;
     userlist->length++;
 
     return true;
