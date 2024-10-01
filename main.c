@@ -168,13 +168,23 @@ bool userlist_remove(Userlist *userlist, const size_t i) {
     return true;
 }
 
+void userlist_destroy(const Userlist *userlist) {
+    for (size_t i = 0; i < userlist->length; i++) {
+        free(userlist->users[i].name);
+        free(userlist->users[i].last_name);
+        free(userlist->users[i].email);
+    }
+
+    free(userlist->users);
+}
+
 // Returns `false` if the index is out of bounds.
 bool userlist_print_at(const Userlist *userlist, const size_t i) {
     if (i >= userlist->length) {
         return false;
     }
 
-    User user = userlist->users[i];
+    const User user = userlist->users[i];
     printf("User[%zu]\n\tName: %s\n\tLast name: %s\n\tEmail: %s\n", i, user.name, user.last_name, user.email);
     return true;
 }
@@ -225,7 +235,7 @@ int main() {
             case 1:
                 printf("Users:\n");
                 userlist_print_all(&userlist);
-                free(userlist.users);
+                userlist_destroy(&userlist);
                 return 0;
             case 2:
                 printf("Enter the following information for the new user:\nName:");
