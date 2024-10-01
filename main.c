@@ -31,7 +31,7 @@ GetLineError get_line(char **line_ptr, const size_t capacity) {
     size_t current_capacity = capacity;
 
     for (int i = 0;; i++) {
-        char c = (char) getchar();
+        const char c = getchar();
 
         if (i > 0 && (i + 1) % capacity == 0) {
             current_capacity *= 2;
@@ -119,7 +119,7 @@ typedef struct {
     size_t capacity;
 } Userlist;
 
-Userlist userlist_create(size_t capacity) {
+Userlist userlist_create(const size_t capacity) {
     Userlist userlist;
 
     userlist.users = malloc(capacity * sizeof(User));
@@ -130,7 +130,7 @@ Userlist userlist_create(size_t capacity) {
 }
 
 // Returns `false` if the list could not be reallocated.
-bool userlist_push(Userlist *userlist, User user) {
+bool userlist_push(Userlist *userlist, const User user) {
     size_t length = userlist->length;
     size_t capacity = userlist->capacity;
 
@@ -153,7 +153,7 @@ bool userlist_push(Userlist *userlist, User user) {
 }
 
 // Returns `false` if the index is out of bounds.
-bool userlist_remove(Userlist *userlist, size_t i) {
+bool userlist_remove(Userlist *userlist, const size_t i) {
     if (i >= userlist->length) {
         return false;
     }
@@ -169,7 +169,7 @@ bool userlist_remove(Userlist *userlist, size_t i) {
 }
 
 // Returns `false` if the index is out of bounds.
-bool userlist_print_at(Userlist *userlist, size_t i) {
+bool userlist_print_at(const Userlist *userlist, const size_t i) {
     if (i >= userlist->length) {
         return false;
     }
@@ -179,13 +179,13 @@ bool userlist_print_at(Userlist *userlist, size_t i) {
     return true;
 }
 
-void userlist_print_all(Userlist *userlist) {
+void userlist_print_all(const Userlist *userlist) {
     for (size_t i = 0; i < userlist->length; i++) {
         userlist_print_at(userlist, i);
     }
 }
 
-int handle_get_line(char **line_ptr, size_t capacity) {
+int handle_get_line(char **line_ptr, const size_t capacity) {
     switch (get_line(line_ptr, capacity)) {
         case GET_LINE_SUCCESS:
             return 0;
@@ -197,6 +197,9 @@ int handle_get_line(char **line_ptr, size_t capacity) {
             return 0;
         case GET_LINE_CAPACITY_LESS_THAN_10:
             fprintf(stderr, "get_line error: GET_LINE_CAPACITY_LESS_THAN_10");
+            return -1;
+        default:
+            fprintf(stderr, "this error message was caused by a bug");
             return -1;
     }
 }
